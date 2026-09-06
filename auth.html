@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="auth-page">
+  <div class="auth-brand"><span class="brand-mark">C</span><strong>CashFlow</strong></div>
+  <div class="auth-card">
+    {% with messages=get_flashed_messages(with_categories=true) %}
+      {% for category,message in messages %}<div class="alert {{ category }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    {% block auth_content %}{% endblock %}
+  </div>
+  <p class="auth-foot">CashFlow · pencatatan keuangan sederhana</p>
+</div>
+{% endblock %}

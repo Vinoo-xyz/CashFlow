@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · CashFlow{% endblock %}
+{% block body %}
+<div class="shell">
+<aside class="sidebar">
+  <div>
+    <a class="brand" href="#overview"><span class="brand-mark">C</span><span>CashFlow</span></a>
+    <div class="nav-title">MENU</div>
+    <nav>
+      <a class="nav-item active" href="#overview"><span class="nav-dot"></span>Ringkasan</a>
+      <a class="nav-item" href="#transactions"><span class="nav-dot"></span>Transaksi</a>
+      <a class="nav-item" href="#budget"><span class="nav-dot"></span>Budget</a>
+      <a class="nav-item" href="#goals"><span class="nav-dot"></span>Target</a>
+      <a class="nav-item" href="#recurring"><span class="nav-dot"></span>Berulang</a>
+    </nav>
+  </div>
+  <div class="user-box">
+    <div class="avatar">{{ user["name"][0]|upper }}</div>
+    <div class="user-info"><strong>{{ user["name"] }}</strong><span>{{ user["email"] }}</span></div>
+    <a href="{{ url_for('logout') }}" class="logout">Keluar</a>
+  </div>
+</aside>
+
+<main class="content" id="overview">
+<header class="header">
+  <div><span class="eyebrow">KEUANGAN PRIBADI</span><h1>Halo, {{ user["name"] }}.</h1><p>Ringkasan keuanganmu untuk bulan yang dipilih.</p></div>
+  <div class="header-actions">
+    <label class="month-control"><span>Bulan</span><input id="monthPicker" type="month" value="{{ month }}"></label>
+    <button class="btn btn-dark" onclick="openTxModal()">+ Transaksi</button>
+  </div>
+</header>
+
+<section class="summary-grid">
+  <div class="balance-card"><span>Saldo keseluruhan</span><strong id="balance">Rp0</strong><small>Seluruh transaksi yang tersimpan</small></div>
+  <div class="stat-card"><span>Pemasukan bulan ini</span><strong id="income">Rp0</strong><small class="green">Uang masuk</small></div>
+  <div class="stat-card"><span>Pengeluaran bulan ini</span><strong id="expense">Rp0</strong><small class="red">Uang keluar</small></div>
+</section>
+
+<section class="budget-strip">
+  <div><span>Budget bulan ini</span><strong id="budgetValue">Rp0</strong></div>
+  <div class="budget-middle"><div class="progress"><span id="budgetProgress"></span></div><small id="budgetText">Belum ada budget.</small></div>
+  <div class="budget-right"><span>Sisa budget</span><strong id="budgetLeft">Belum diatur</strong></div>
+</section>
+
+<section class="two-col">
+  <div class="panel transactions-panel" id="transactions">
+    <div class="panel-head"><div><h2>Transaksi</h2><p>Catatan untuk bulan yang dipilih.</p></div><a id="exportBtn" class="link-btn">Export CSV</a></div>
+    <div class="table-wrap"><table><thead><tr><th>TANGGAL</th><th>NAMA</th><th>KATEGORI</th><th>JUMLAH</th><th></th></tr></thead><tbody id="txBody"></tbody></table></div>
+    <div id="emptyTx" class="empty hidden">Belum ada transaksi di bulan ini.</div>
+  </div>
+
+  <div class="panel" id="budget">
+    <div class="panel-head"><div><h2>Atur budget</h2><p>Batasi pengeluaran bulananmu.</p></div></div>
+    <form id="budgetForm" class="money-form"><div class="money-input"><span>Rp</span><input id="budgetInput" class="money-field" inputmode="numeric" autocomplete="off" placeholder="1.000.000"></div><button class="btn btn-dark">Simpan</button></form>
+    <div class="panel-divider"></div>
+    <div class="subhead">Budget kategori</div>
+    <form id="catBudgetForm" class="category-form">
+      <select id="catBudgetCategory"><option>Makanan</option><option>Transportasi</option><option>Pendidikan</option><option>Hiburan</option><option>Belanja</option><option>Tagihan</option><option>Kesehatan</option><option>Lainnya</option></select>
+      <div class="money-input"><span>Rp</span><input id="catBudgetAmount" class="money-field" inputmode="numeric" autocomplete="off" placeholder="300.000" required></div>
+      <button class="btn btn-light">Tambah</button>
+    </form>
+    <div id="catBudgetList" class="list-stack"></div>
+  </div>
+</section>
+
+<section class="two-col">
+  <div class="panel" id="goals">
+    <div class="panel-head"><div><h2>Target tabungan</h2><p>Tujuan yang ingin kamu capai.</p></div><button class="btn btn-light" onclick="openGoalModal()">+ Target</button></div>
+    <div id="goalsList" class="list-stack"></div><div id="emptyGoals" class="empty">Belum ada target tabungan.</div>
+  </div>
+  <div class="panel chart-panel">
+    <div class="panel-head"><div><h2>Pengeluaran</h2><p>Ringkasan berdasarkan kategori.</p></div></div>
+    <div class="chart-wrap"><canvas id="expenseChart"></canvas></div>
+    <div id="categoryStats" class="category-stats"></div>
+  </div>
+</section>
+
+<section class="panel recurring-panel" id="recurring">
+  <div class="panel-head"><div><h2>Transaksi berulang</h2><p>Catat transaksi rutin setiap bulan secara otomatis.</p></div><button class="btn btn-light" onclick="openRecurringModal()">+ Tambah</button></div>
+  <div id="recurringList" class="recurring-grid"></div>
+</section>
+</main>
+</div>
+
+<div id="txModal" class="modal hidden"><div class="modal-card"><button class="close" onclick="closeModal('txModal')">×</button><span class="eyebrow">TRANSAKSI</span><h2 id="txModalTitle">Tambah transaksi</h2>
+<form id="txForm" class="form">
+<input type="hidden" id="txId" value="">
+<label>Jenis<select id="txKind"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select></label>
+<label>Nama transaksi<input id="txName" required placeholder="Contoh: Makan siang"></label>
+<label>Jumlah<div class="money-input"><span>Rp</span><input id="txAmount" class="money-field" inputmode="numeric" autocomplete="off" required placeholder="30.000"></div></label>
+<label>Kategori<select id="txCategory"><option>Makanan</option><option>Transportasi</option><option>Pendidikan</option><option>Hiburan</option><option>Belanja</option><option>Tagihan</option><option>Kesehatan</option><option>Gaji</option><option>Lainnya</option></select></label>
+<label>Tanggal<input id="txDate" type="date" required></label>
+<label>Catatan <em>opsional</em><textarea id="txNote" rows="3" placeholder="Tambahkan catatan jika diperlukan"></textarea></label>
+<button class="btn btn-dark btn-full">Simpan transaksi</button>
+</form></div></div>
+
+<div id="goalModal" class="modal hidden"><div class="modal-card"><button class="close" onclick="closeModal('goalModal')">×</button><span class="eyebrow">TARGET TABUNGAN</span><h2>Tambah target</h2>
+<form id="goalForm" class="form">
+<label>Nama target<input id="goalName" required placeholder="Contoh: Laptop baru"></label>
+<label>Target nominal<div class="money-input"><span>Rp</span><input id="goalTarget" class="money-field" inputmode="numeric" autocomplete="off" required placeholder="5.000.000"></div></label>
+<label>Sudah terkumpul<div class="money-input"><span>Rp</span><input id="goalSaved" class="money-field" inputmode="numeric" autocomplete="off" value="0"></div></label>
+<label>Deadline <em>opsional</em><input id="goalDeadline" type="date"></label>
+<button class="btn btn-dark btn-full">Simpan target</button>
+</form></div></div>
+
+<div id="recurringModal" class="modal hidden"><div class="modal-card"><button class="close" onclick="closeModal('recurringModal')">×</button><span class="eyebrow">TRANSAKSI BERULANG</span><h2>Tambah transaksi rutin</h2>
+<form id="recurringForm" class="form">
+<label>Jenis<select id="recKind"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select></label>
+<label>Nama<input id="recName" required placeholder="Contoh: Internet"></label>
+<label>Jumlah<div class="money-input"><span>Rp</span><input id="recAmount" class="money-field" inputmode="numeric" autocomplete="off" required placeholder="250.000"></div></label>
+<label>Kategori<select id="recCategory"><option>Tagihan</option><option>Makanan</option><option>Transportasi</option><option>Gaji</option><option>Lainnya</option></select></label>
+<label>Tanggal setiap bulan<input id="recDay" type="number" min="1" max="28" value="10" required></label>
+<button class="btn btn-dark btn-full">Simpan</button>
+</form></div></div>
+<div id="toast" class="toast hidden"></div>
+{% endblock %}
