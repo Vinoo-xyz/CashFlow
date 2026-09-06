@@ -1,0 +1,12 @@
+{% extends "auth.html" %}
+{% block title %}Daftar · CashFlow{% endblock %}
+{% block auth_content %}
+<div class="auth-heading"><span class="eyebrow">CASHFLOW V4</span><h1>Buat akun baru.</h1><p>Simpan catatan keuanganmu dengan lebih teratur.</p></div>
+<form method="post" class="form">
+<label>Nama<input name="name" type="text" autocomplete="name" placeholder="Nama kamu" required></label>
+<label>Email<input name="email" type="email" autocomplete="email" placeholder="nama@email.com" required></label>
+<label>Password<input name="password" type="password" autocomplete="new-password" minlength="6" placeholder="Minimal 6 karakter" required></label>
+<button class="btn btn-dark btn-full">Buat akun</button>
+</form>
+<p class="auth-switch">Sudah punya akun? <a href="{{ url_for('login') }}">Masuk</a></p>
+{% endblock %}

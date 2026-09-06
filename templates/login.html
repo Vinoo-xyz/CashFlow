@@ -1,0 +1,11 @@
+{% extends "auth.html" %}
+{% block title %}Masuk · CashFlow{% endblock %}
+{% block auth_content %}
+<div class="auth-heading"><span class="eyebrow">CASHFLOW V4</span><h1>Selamat datang kembali.</h1><p>Masuk untuk melihat dan mengatur keuanganmu.</p></div>
+<form method="post" class="form">
+<label>Email<input name="email" type="email" autocomplete="email" placeholder="nama@email.com" required></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required></label>
+<button class="btn btn-dark btn-full">Masuk</button>
+</form>
+<p class="auth-switch">Belum punya akun? <a href="{{ url_for('register') }}">Daftar sekarang</a></p>
+{% endblock %}
